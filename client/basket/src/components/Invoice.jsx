@@ -51,8 +51,14 @@ const Invoice = () => {
   }, []);
 
   if (loading) return <InvoiceSkeleton />;
-  if (!cart || cart.items.length === 0)
-    return <h3>No items for checkout</h3>;
+  if (!cart || cart.items.length === 0) {
+  return (
+    <div className="emptyCart">
+      <h2>🛒 Your cart is empty</h2>
+      <p>Add items to place an order</p>
+    </div>
+  );
+}
 
   // 🧮 Calculations
   const subTotal = cart.items.reduce((acc, item) => {

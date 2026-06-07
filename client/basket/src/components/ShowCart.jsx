@@ -71,7 +71,12 @@ const ShowCart = () => {
   // EMPTY STATE
   // ==========================
   if (!cartDetail || cartDetail.items.length === 0) {
-    return <div className="cartEmpty">Your cart is empty 🛒</div>;
+    return (
+    <div className="emptyCart">
+      <h2>🛒 Your cart is empty</h2>
+      <p>Add items to place an order</p>
+    </div>
+  );
   }
 
   return (

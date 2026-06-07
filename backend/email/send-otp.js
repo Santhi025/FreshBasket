@@ -33,7 +33,7 @@ exports.sendOtpEmail = async (email, otp) => {
       html: `<h2>Your OTP is: ${otp}</h2><p>Valid for 5 minutes</p>`
     });
 
-    console.log("Email sent:", info.response);
+    console.log("FULL INFO:", info);
 
   } catch (error) {
     console.error("FULL ERROR:", error);  
