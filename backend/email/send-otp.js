@@ -22,14 +22,14 @@
 // });
 
 // // exports.sendOtpEmail = async(email, otp)=>{
-// //    await transporter.sendMail({
-// //     from: `"OTP Verification" <${process.env.EMAIL_USER}>`,
-// //     to: email,
-// //     subject: "Your OTP code",
+//    await transporter.sendMail({
+//     from: `"OTP Verification" <${process.env.EMAIL_USER}>`,
+//     to: email,
+//     subject: "Your OTP code",
   
-// //     html: `<h2> Your OTP is: ${otp} </h2> <p> Valid for 5 minutes </p> `
-// //   });
-// // }
+//     html: `<h2> Your OTP is: ${otp} </h2> <p> Valid for 5 minutes </p> `
+//   });
+// }
 
 // exports.sendOtpEmail = async (email, otp) => {
 //   try {
@@ -65,28 +65,94 @@
 
 
 
-const { Resend } = require("resend");
-const dotenv = require("dotenv");
+// const { Resend } = require("resend");
+// const dotenv = require("dotenv");
 
-dotenv.config();
+// dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// const resend = new Resend(process.env.RESEND_API_KEY);
+
+// exports.sendOtpEmail = async (email, otp) => {
+//   try {
+//     const response = await resend.emails.send({
+//       from: "onboarding@resend.dev",
+//       to: email,
+//       subject: "Your OTP Code",
+//       html: `
+//         <h2>Your OTP is: ${otp}</h2>
+//         <p>Valid for 5 minutes</p>
+//       `,
+//     });
+
+//     console.log("EMAIL SENT:", response);
+//   } catch (error) {
+//     console.error("EMAIL ERROR:", error);
+//     throw error;
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+const { google } = require("googleapis");
+const MailComposer = require("nodemailer/lib/mail-composer");
+const dotEnv = require("dotenv");
+
+dotEnv.config();
+
+const oauth2Client = new google.auth.OAuth2(
+  process.env.OAUTH_CLIENT_ID,
+  process.env.OAUTH_CLIENT_SECRET,
+  "https://developers.google.com/oauthplayground"
+);
+
+oauth2Client.setCredentials({
+  refresh_token: process.env.OAUTH_REFRESH_TOKEN,
+});
+
+const gmail = google.gmail({
+  version: "v1",
+  auth: oauth2Client,
+});
 
 exports.sendOtpEmail = async (email, otp) => {
   try {
-    const response = await resend.emails.send({
-      from: "onboarding@resend.dev",
+    const mail = new MailComposer({
+      from: process.env.OAUTH_EMAIL,
       to: email,
-      subject: "Your OTP Code",
+      subject: "OTP Verification",
       html: `
         <h2>Your OTP is: ${otp}</h2>
         <p>Valid for 5 minutes</p>
       `,
     });
 
-    console.log("EMAIL SENT:", response);
+    const message = await mail.compile().build();
+
+    const raw = Buffer.from(message)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+
+    const result = await gmail.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw,
+      },
+    });
+
+    console.log("Email sent:", result.data.id);
   } catch (error) {
-    console.error("EMAIL ERROR:", error);
+    console.error("FULL ERROR:", error);
     throw error;
   }
 };
